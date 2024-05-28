@@ -1,0 +1,28 @@
+{
+  "name": "marketplace-brc20-backend",
+  "version": "1.0.0",
+  "description": "Backend for Ordinal Marketplace",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/btcwhiz/marketplace-brc20-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/btcwhiz/marketplace-brc20-backend/issues"
+  },
+  "homepage": "https://github.com/btcwhiz/marketplace-brc20-backend#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
