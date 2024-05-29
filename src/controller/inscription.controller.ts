@@ -15,6 +15,7 @@ const listInscription = async (req: Request, res: Response) => {
 
   const newInscription = new Inscription({
     address,
+    pubkey,
     inscriptionId,
     inscriptionNumber,
     content,
@@ -39,9 +40,9 @@ const listInscription = async (req: Request, res: Response) => {
 
 const unlistInscription = async (req: Request, res: Response) => {
   const { inscriptionId } = req.body;
-
+  console.log("xxxxx => ", req.body);
   try {
-    await Inscription.deleteOne({ inscriptionId: inscriptionId });
+    await Inscription.findOneAndDelete({ inscriptionId: inscriptionId });
     return res.status(200).json({
       success: true,
       msg: "Successfully unlisted",
@@ -56,8 +57,8 @@ const unlistInscription = async (req: Request, res: Response) => {
 
 const getAllInscriptions = async (req: Request, res: Response) => {
   try {
-    const inscriptions = Inscription.find({});
-
+    
+    const inscriptions = await Inscription.find({});
     res.status(200).json({
       success: true,
       inscriptions,
@@ -71,49 +72,55 @@ const getAllInscriptions = async (req: Request, res: Response) => {
 };
 
 const getInscriptionsByAddress = async (req: Request, res: Response) => {
-    const {
-        address
-    } = req.body;
+  const address = req.params.sellerAddress;
+  try {
+    const inscriptions = await Inscription.find({ address: address });
+    res.status(200).json({
+      success: true,
+      inscriptions,
+    });
+  } catch (error) {
+    console.log("Get inscriptions by address error =>", error);
+    if (error) {
+      res.status(500).json({
+        success: false,
+        error: error,
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        inscriptions: []
+      });
+    }
+  }
+};
 
-    try {
-        const inscriptions = Inscription.find({address: address});
-    
-        res.status(200).json({
-          success: true,
-          inscriptions,
-        });
-      } catch (error) {
-        res.status(500).json({
-          success: false,
-          error: error,
-        });
-      }
-}
-
-const getInscriptionsById = async (req: Request, res: Response) => {
-    const {
-        inscriptionId
-    } = req.body;
-
-    try {
-        const inscription = Inscription.find({inscriptionId: inscriptionId});
-    
-        res.status(200).json({
-          success: true,
-          inscription,
-        });
-      } catch (error) {
-        res.status(500).json({
-          success: false,
-          error: error,
-        });
-      }
-}
+const getInscriptionById = async (req: Request, res: Response) => {
+  const inscriptionId = req.params.id;
+  try {
+    const inscription = await Inscription.find({ inscriptionId: inscriptionId });
+    if (inscription.length == 0) {
+      res.status(500).json({
+        success: false,
+        error: "Not listed"
+      });
+    }    
+    res.status(200).json({
+      success: true,
+      inscription: inscription[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error,
+    });
+  }
+};
 
 export default {
-    listInscription,
-    unlistInscription,
-    getAllInscriptions,
-    getInscriptionsByAddress,
-    getInscriptionsById
-}
+  listInscription,
+  unlistInscription,
+  getAllInscriptions,
+  getInscriptionsByAddress,
+  getInscriptionById,
+};

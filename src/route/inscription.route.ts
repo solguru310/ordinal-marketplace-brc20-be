@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Middleware for logging requests to this router
 router.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`Raffle request received: ${req.method} ${req.originalUrl}`);
+  console.log(`API request received: ${req.method} ${req.originalUrl}`);
   next();
 });
 
@@ -51,10 +51,10 @@ router.get(
 );
 
 router.get(
-  "/inscriptionId/:id",
+  "/inscriptionid/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await InscriptionController.getInscriptionsById(req, res);
+        await InscriptionController.getInscriptionById(req, res);
     } catch (error) {
         next(error);
     }
