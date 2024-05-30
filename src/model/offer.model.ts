@@ -9,6 +9,7 @@ const OfferSchema = new Schema(
     tokenTicker: String,
     psbt: String,
     status: Number,               // Current Status of Offer - Request = 0 | Accepted = 1 | Rejected = 2
+    buyerSignedPsbt: String,
   },
   {
     timestamps: {

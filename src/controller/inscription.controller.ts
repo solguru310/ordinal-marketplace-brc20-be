@@ -106,6 +106,7 @@ const getInscriptionById = async (req: Request, res: Response) => {
         success: false,
         error: "Not listed"
       });
+      return;
     }    
     res.status(200).json({
       success: true,

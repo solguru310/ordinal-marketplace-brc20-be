@@ -148,10 +148,10 @@ export const generateOfferPSBT = async (
     fee_buyerInscriptionWithUtxo.scriptpubkey,
     "hex"
   );
-  console.log("0");
+
   const psbt = new Bitcoin.Psbt({ network: network });
+  console.log("Create psbt", psbt);
   // Add Inscription Input
-  console.log("0 1");
   psbt.addInput({
     hash: sellerInscriptionsWithUtxo.txid,
     index: sellerInscriptionsWithUtxo.vout,
@@ -161,7 +161,9 @@ export const generateOfferPSBT = async (
     },
     tapInternalKey: Buffer.from(sellerPubkey, "hex").slice(1, 33),
   });
-  console.log("1");
+
+  console.log("Input 1", psbt);
+
   psbt.addInput({
     hash: buyerInscriptionWithUtxo.txid,
     index: buyerInscriptionWithUtxo.vout,
@@ -171,7 +173,9 @@ export const generateOfferPSBT = async (
     },
     tapInternalKey: Buffer.from(buyerPubkey, "hex").slice(1, 33),
   });
-  console.log("2");
+
+  console.log("Input 2", psbt);
+
   psbt.addInput({
     hash: fee_buyerInscriptionWithUtxo.txid,
     index: fee_buyerInscriptionWithUtxo.vout,
@@ -181,22 +185,32 @@ export const generateOfferPSBT = async (
     },
     tapInternalKey: Buffer.from(buyerPubkey, "hex").slice(1, 33),
   });
-  console.log("3");
+
+  console.log("Input 3", psbt);
+
   psbt.addOutput({
     address: buyerAddress,
     value: sellerInscriptionsWithUtxo.value,
   });
-  console.log("4");
+
+  console.log("Output 1", psbt);
+
   psbt.addOutput({
     address: sellerAddress,
     value: buyerInscriptionWithUtxo.value,
   });
-  console.log("5");
+
+  console.log("Output 2", psbt);
+
+
   psbt.addOutput({
     address: ADMIN_PAYMENT_ADDRESS,
     value: fee_buyerInscriptionWithUtxo.value,
   });
-  console.log("6");
+
+  console.log("Output 3", psbt);
+
+
   const btcUtxos = await getBtcUtxoByAddress(sellerAddress as string);
   const feeRate = await getFeeRate();
   let amount = 0;
@@ -217,19 +231,78 @@ export const generateOfferPSBT = async (
         tapInternalKey: Buffer.from(sellerPubkey, "hex").slice(1, 33),
         sighashType: Bitcoin.Transaction.SIGHASH_ALL,
       });
+      console.log("Input fee", psbt);
+
     }
   }
-  console.log("7");
+
   const fee = calculateTxFee(psbt, feeRate);
+
+  console.log("Input fee",fee, feeRate);
 
   if (amount < fee)
     throw "You do not have enough bitcoin in your wallet";
-  console.log("8");
+
   psbt.addOutput({
     address: sellerAddress as string,
     value: amount - fee,
   });
-  console.log("9");
+
+  console.log("Input fee", psbt);
+
   return psbt;
 };
 
+const postData = async (
+  url: string,
+  json: any,
+  content_type = "text/plain",
+  apikey = ""
+): Promise<string | undefined> => {
+  try {
+    const headers: any = {};
+    if (content_type) headers["Content-Type"] = content_type;
+    if (apikey) headers["X-Api-Key"] = apikey;
+    const res = await axios.post(url, json, {
+      headers,
+    });
+    return res.data as string;
+  } catch (err: any) {
+    console.log('Push Transaction Error')
+    console.log(err.response.data)
+  }
+}
+
+export const combinePsbt = async (
+  hexedPsbt: string,
+  signedHexedPsbt1: string,
+  signedHexedPsbt2?: string
+) => {
+  try {
+    const psbt = Bitcoin.Psbt.fromHex(hexedPsbt);
+    const signedPsbt1 = Bitcoin.Psbt.fromHex(signedHexedPsbt1);
+    if (signedHexedPsbt2) {
+      const signedPsbt2 = Bitcoin.Psbt.fromHex(signedHexedPsbt2);
+      psbt.combine(signedPsbt1, signedPsbt2);
+    } else {
+      psbt.combine(signedPsbt1);
+    }
+    const tx = psbt.extractTransaction();
+    const txHex = tx.toHex();
+
+    const txId = await pushRawTx(txHex);
+    return txId;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+export const pushRawTx = async (rawTx: string) => {
+  const txid = await postData(
+    `https://mempool.space/testnet/api/tx`,
+    rawTx
+  );
+  console.log("pushed txid", txid);
+  return txid;
+};

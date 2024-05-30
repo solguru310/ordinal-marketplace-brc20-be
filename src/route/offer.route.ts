@@ -29,6 +29,22 @@ router.post("/add", async (req: Request, res: Response, next: NextFunction) => {
     }
 })
 
+router.get("/remove/:id", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await OfferController.rejectOffer(req, res);
+    } catch (error) {
+        next(error);
+    }
+})
+
+router.post("/accept", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await OfferController.acceptOffer(req, res);
+    } catch (error) {
+        next(error);
+    }
+})
+
 router.get("/all/inscription/:inscriptionId", async (req: Request, res: Response, next: NextFunction) => {
     try {
         await OfferController.getAllOffers(req, res);
@@ -37,12 +53,8 @@ router.get("/all/inscription/:inscriptionId", async (req: Request, res: Response
     }
 })
 
-router.get("/remove/:id", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        await OfferController.rejectOffer(req, res);
-    } catch (error) {
-        next(error);
-    }
+router.post("/test", async (req: Request, res: Response, next: NextFunction) => {
+    await OfferController.test(req, res);
 })
 
 export default router;
