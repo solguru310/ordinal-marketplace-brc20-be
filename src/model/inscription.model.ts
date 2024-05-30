@@ -2,13 +2,13 @@ import { default as mongoose, Schema } from "mongoose";
 
 const InscriptionSchema = new Schema(
   {
-    inscriptionId: String,
-    inscriptionNumber: Number,
     address: String,
     pubkey: String,
+    inscriptionId: String,
+    inscriptionNumber: Number,
+    content: String,
     price: Number,
     tokenTicker: String,
-    content: String,
   },
   {
     timestamps: {

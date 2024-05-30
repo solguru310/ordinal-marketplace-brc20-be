@@ -2,9 +2,9 @@ import { default as mongoose, Schema } from "mongoose";
 
 const OfferSchema = new Schema(
   {
+    inscriptionId: String,
     sellerAddress: String,
     buyerAddress: String,
-    inscriptionId: String,
     price: Number,
     tokenTicker: String,
     psbt: String,

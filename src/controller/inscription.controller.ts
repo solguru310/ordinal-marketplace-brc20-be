@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { Inscription } from "../model/inscription.model";
+import { Offer } from "../model/offer.model";
 
 const listInscription = async (req: Request, res: Response) => {
   const {
@@ -40,9 +41,10 @@ const listInscription = async (req: Request, res: Response) => {
 
 const unlistInscription = async (req: Request, res: Response) => {
   const { inscriptionId } = req.body;
-  console.log("xxxxx => ", req.body);
+  console.log("xxxx => ", req.body)
   try {
     await Inscription.findOneAndDelete({ inscriptionId: inscriptionId });
+    await Offer.deleteMany({inscriptionId: inscriptionId});
     return res.status(200).json({
       success: true,
       msg: "Successfully unlisted",

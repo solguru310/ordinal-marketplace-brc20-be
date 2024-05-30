@@ -2,7 +2,6 @@ import * as Bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import axios from "axios";
 import {
-  testVersion,
   OPENAPI_UNISAT_URL,
   OPENAPI_UNISAT_TOKEN,
   SIGNATURE_SIZE,
@@ -11,15 +10,14 @@ import {
 import { IUtxo } from "../types/types";
 
 Bitcoin.initEccLib(ecc);
-const network = testVersion
-  ? Bitcoin.networks.testnet
-  : Bitcoin.networks.bitcoin;
+const network = Bitcoin.networks.testnet;
 
 // Get Inscription UTXO
 const getInscriptionWithUtxo = async (inscriptionId: string) => {
   try {
     const url = `${OPENAPI_UNISAT_URL}/v1/indexer/inscription/info/${inscriptionId}`;
 
+    console.log("url api key =>", url, OPENAPI_UNISAT_TOKEN);
     const config = {
       headers: {
         Authorization: `Bearer ${OPENAPI_UNISAT_TOKEN}`,
@@ -89,9 +87,7 @@ const getBtcUtxoByAddress = async (address: string) => {
 // Get Current Network Fee
 const getFeeRate = async () => {
   try {
-    const url = `https://mempool.space/${
-      testVersion ? "testnet/" : ""
-    }api/v1/fees/recommended`;
+    const url = `https://mempool.space/testnet/api/v1/fees/recommended`;
 
     const res = await axios.get(url);
 
@@ -152,9 +148,10 @@ export const generateOfferPSBT = async (
     fee_buyerInscriptionWithUtxo.scriptpubkey,
     "hex"
   );
+  console.log("0");
   const psbt = new Bitcoin.Psbt({ network: network });
-
   // Add Inscription Input
+  console.log("0 1");
   psbt.addInput({
     hash: sellerInscriptionsWithUtxo.txid,
     index: sellerInscriptionsWithUtxo.vout,
@@ -164,7 +161,7 @@ export const generateOfferPSBT = async (
     },
     tapInternalKey: Buffer.from(sellerPubkey, "hex").slice(1, 33),
   });
-
+  console.log("1");
   psbt.addInput({
     hash: buyerInscriptionWithUtxo.txid,
     index: buyerInscriptionWithUtxo.vout,
@@ -174,7 +171,7 @@ export const generateOfferPSBT = async (
     },
     tapInternalKey: Buffer.from(buyerPubkey, "hex").slice(1, 33),
   });
-
+  console.log("2");
   psbt.addInput({
     hash: fee_buyerInscriptionWithUtxo.txid,
     index: fee_buyerInscriptionWithUtxo.vout,
@@ -184,22 +181,22 @@ export const generateOfferPSBT = async (
     },
     tapInternalKey: Buffer.from(buyerPubkey, "hex").slice(1, 33),
   });
-
+  console.log("3");
   psbt.addOutput({
     address: buyerAddress,
     value: sellerInscriptionsWithUtxo.value,
   });
-
+  console.log("4");
   psbt.addOutput({
     address: sellerAddress,
     value: buyerInscriptionWithUtxo.value,
   });
-
+  console.log("5");
   psbt.addOutput({
     address: ADMIN_PAYMENT_ADDRESS,
     value: fee_buyerInscriptionWithUtxo.value,
   });
-
+  console.log("6");
   const btcUtxos = await getBtcUtxoByAddress(sellerAddress as string);
   const feeRate = await getFeeRate();
   let amount = 0;
@@ -222,17 +219,17 @@ export const generateOfferPSBT = async (
       });
     }
   }
-
+  console.log("7");
   const fee = calculateTxFee(psbt, feeRate);
 
   if (amount < fee)
     throw "You do not have enough bitcoin in your wallet";
-
+  console.log("8");
   psbt.addOutput({
     address: sellerAddress as string,
     value: amount - fee,
   });
-
+  console.log("9");
   return psbt;
 };
 

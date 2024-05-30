@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cors from "cors";
 import inscriptionRouter from "./route/inscription.route";
+import offerRouter from "./route/offer.route";
 
 dotenv.config();
 
@@ -37,3 +38,4 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/inscription", inscriptionRouter);
+app.use("/api/offer", offerRouter);
